@@ -1,5 +1,5 @@
 # Hololens2017
-Material for the Hololens hands on and hack. __describe contents when uploaded__
+Material for the Hololens hands on and hack. 
 
 # Licence
 All code and data within this repo is licensed under the "Creative Commons Zero" license. This means that the code is essentially public domain and free for anyone to do anything with. 
