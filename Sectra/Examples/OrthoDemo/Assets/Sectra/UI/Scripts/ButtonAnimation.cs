@@ -11,6 +11,7 @@ using System;
 /// </summary>
 public class ButtonAnimation : MonoBehaviour,
                                 IInputHandler,
+                                IFocusable,
                                 ISourceStateHandler
 {
 
@@ -20,8 +21,7 @@ public class ButtonAnimation : MonoBehaviour,
     [Tooltip("The mesh that should be animated. Defaults to self.")]
     public GameObject ButtonMesh;
 
-    [Tooltip("The text mesh that should be animated. Defaults to self.")]
-    public GameObject TextMesh;
+    public Vector3 focusOffset = new Vector3(0.0f, 0.0f, 0.1f);
 
     public Color PressedColor = new Color(0.6f,0.6f,0.6f);
 
@@ -35,7 +35,8 @@ public class ButtonAnimation : MonoBehaviour,
     private Color currentColor;
 
     private bool currentlyInModal = false;
-
+    private bool focused = false;
+    private bool pressed = false;
 	// Use this for initialization
 	void Start () {
 		
@@ -51,17 +52,6 @@ public class ButtonAnimation : MonoBehaviour,
             buttonMaterial = rend.material;
             buttonMaterial.color = DefaultColor;
         }
-
-        if (TextMesh != null)
-        {
-            Renderer textRenderer = TextMesh.GetComponent<Renderer>();
-
-            if (textRenderer != null)
-            {
-                textMaterial = textRenderer.material;
-                textMaterial.color = DefaultColor;
-            }
-        }
         
         currentColor = DefaultColor;
         
@@ -69,20 +59,15 @@ public class ButtonAnimation : MonoBehaviour,
 
     public void OnInputUp(InputEventData eventData)
     {
+
+        pressed = false;
         if (ToggleBehaviour)
         {
             currentColor = (currentColor == DefaultColor ? ToggleColor : DefaultColor);
         }
 
-        if (buttonMaterial)
-        {
-            buttonMaterial.color = currentColor;
-        }
 
-        if (textMaterial)
-        {
-            textMaterial.color = currentColor;
-        }
+        setCurrentColor();
 
         if (currentlyInModal)
         {
@@ -95,16 +80,9 @@ public class ButtonAnimation : MonoBehaviour,
 
     public void OnInputDown(InputEventData eventData)
     {
-        if (buttonMaterial)
-        {
-            buttonMaterial.color = PressedColor;
-        }
+        pressed = true;
 
-        if (textMaterial)
-        {
-            textMaterial.color = PressedColor;
-        }
-
+        setCurrentColor();
         InputManager.Instance.PushModalInputHandler(gameObject);
         currentlyInModal = true;
     }
@@ -116,22 +94,41 @@ public class ButtonAnimation : MonoBehaviour,
 
     public void OnSourceLost(SourceStateEventData eventData)
     {
-
+        focused = false;
+        pressed = false;
         if (currentlyInModal)
         {
             InputManager.Instance.PopModalInputHandler();
             currentlyInModal = false;
         }
 
+        setCurrentColor();
+
+    }
+
+    public void OnFocusEnter()
+    {
+        transform.position += focusOffset;
+        focused = true;
+
+        setCurrentColor();
+    }
+
+    public void OnFocusExit()
+    {
+        transform.position -= focusOffset;
+        focused = false;
+
+        setCurrentColor();
+    }
+
+
+
+    private void setCurrentColor()
+    {
         if (buttonMaterial)
         {
-            buttonMaterial.color = currentColor;
+            buttonMaterial.color = (pressed ? PressedColor : currentColor) * (focused ? 1.5f : 1.0f);
         }
-
-        if (textMaterial)
-        {
-            textMaterial.color = currentColor;
-        }
-
     }
 }
